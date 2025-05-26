@@ -1,14 +1,13 @@
 name: Build and Test Workflow using maven and docker
-on: [push, pull_request]
-
+on: [push, pull_request] 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: cache dependencies
-        uses: actions/cache@v3
+      - name: cache dependencies with maven
+        uses: actions/cache@v3 
         with:
          path: ~/.m2
          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
