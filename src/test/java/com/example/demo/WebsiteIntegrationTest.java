@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.net.URI;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +33,13 @@ class WebsiteIntegrationTest {
         
         if (response.getStatusCode() == HttpStatus.FOUND) {
             var headers = response.getHeaders();
-            var location = headers != null ? headers.getLocation() : null;
+            URI location = headers != null ? headers.getLocation() : null;
             
             if (location != null) {
-                String loginUrl = location.toString();
-                ResponseEntity<String> loginPage = restTemplate.getForEntity(loginUrl, String.class);
-                
+                // Ensure the target URL is absolute before making the request
+                String targetUrl = location.isAbsolute() ? location.toString() : getBaseUrl() + location.toString();
+                ResponseEntity<String> loginPage = restTemplate.getForEntity(targetUrl, String.class);
+
                 // Check login page content only if the response is not null
                 if (loginPage != null && loginPage.getBody() != null) {
                     assertThat(loginPage.getBody()).contains("Login");
