@@ -32,7 +32,10 @@ public class WebsiteIntegrationTest {
 
         if (response != null && response.getHeaders() != null) {
             HttpHeaders headers = response.getHeaders();
-            String loginUrl = (headers.getLocation() != null) ? headers.getLocation().toString() : null;
+            String loginUrl = null;
+            if (headers != null && headers.getLocation() != null) {
+                loginUrl = headers.getLocation().toString();
+            }
 
             // Check if redirection to login occurs
             if (response.getStatusCode().is3xxRedirection() && loginUrl != null) {
@@ -52,11 +55,13 @@ public class WebsiteIntegrationTest {
         // Register a new user
         String registerForm = String.format("username=%s&password=%s", TEST_USERNAME, TEST_PASSWORD);
         ResponseEntity<String> registerResponse = restTemplate.postForEntity(BASE_URL + "/register", registerForm, String.class);
+        assertThat(registerResponse).isNotNull(); // Ensure registerResponse is not null
         assertThat(registerResponse.getStatusCode().is3xxRedirection()).isTrue();
 
         // Try to login (should redirect to /)
         String loginForm = String.format("username=%s&password=%s", TEST_USERNAME, TEST_PASSWORD);
         ResponseEntity<String> loginResponse = restTemplate.postForEntity(BASE_URL + "/login", loginForm, String.class);
+        assertThat(loginResponse).isNotNull(); // Ensure loginResponse is not null
         assertThat(loginResponse.getStatusCode().is3xxRedirection()).isTrue();
     }
 }
