@@ -11,6 +11,7 @@ import static org.mockito.Mockito.*;
 
 public class WebsiteIntegrationTest {
 
+    private static final String BASE_URL = "http://localhost:8080";
     private static final String TEST_USERNAME = "testuser";
     private static final String TEST_PASSWORD = "testpass";
 
@@ -26,7 +27,7 @@ public class WebsiteIntegrationTest {
         when(mockResponse.getHeaders()).thenReturn(mockHeaders);
 
         // Use the real `restTemplate` instance
-        ResponseEntity<String> response = restTemplate.getForEntity("/", String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity(BASE_URL + "/", String.class);
         assertThat(response).isNotNull(); // Ensure response is not null
 
         if (response != null && response.getHeaders() != null) {
@@ -50,12 +51,12 @@ public class WebsiteIntegrationTest {
     void registerAndLoginFlow() {
         // Register a new user
         String registerForm = String.format("username=%s&password=%s", TEST_USERNAME, TEST_PASSWORD);
-        ResponseEntity<String> registerResponse = restTemplate.postForEntity("/register", registerForm, String.class);
+        ResponseEntity<String> registerResponse = restTemplate.postForEntity(BASE_URL + "/register", registerForm, String.class);
         assertThat(registerResponse.getStatusCode().is3xxRedirection()).isTrue();
 
         // Try to login (should redirect to /)
         String loginForm = String.format("username=%s&password=%s", TEST_USERNAME, TEST_PASSWORD);
-        ResponseEntity<String> loginResponse = restTemplate.postForEntity("/login", loginForm, String.class);
+        ResponseEntity<String> loginResponse = restTemplate.postForEntity(BASE_URL + "/login", loginForm, String.class);
         assertThat(loginResponse.getStatusCode().is3xxRedirection()).isTrue();
     }
 }
