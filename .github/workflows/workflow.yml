@@ -1,4 +1,4 @@
-name: Build and Test Workflow
+name: Build and Test Workflow using maven and docker
 on: [push, pull_request]
 
 jobs:
