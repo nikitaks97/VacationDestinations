@@ -1,0 +1,89 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+### H2 Database ###
+data/
+*.db
+*.mv.db
+*.trace.db
+*.lock.db
+
+### Logs ###
+*.log
+logs/
+
+### OS generated files ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+### Temporary files ###
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+### Application specific ###
+application-local.properties
+application-secret.properties
+cookies.txt
+
+### Docker ###
+docker-compose.override.yml
+
+### Environment variables ###
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+### Spring Boot DevTools ###
+.spring-boot-devtools.properties
+
+### Runtime data ###
+pids
+*.pid
+*.seed
+*.pid.lock

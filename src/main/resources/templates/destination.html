@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title th:text="'✈️ ' + ${destination.name} + ' - Dreamy Destinations'">Destination</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Enhanced Font Loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+</head>
+<body>
+    <!-- Magical Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-plane-departure me-2 fs-3"></i>
+                <span style="font-family: 'Dancing Script', cursive;">Dreamy Destinations</span>
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div sec:authorize="!isAuthenticated()" class="d-flex gap-2">
+                    <a class="btn-glass" th:href="@{/login}">
+                        <i class="fas fa-sign-in-alt me-1"></i>Login
+                    </a>
+                    <a class="btn btn-light" th:href="@{/register}">
+                        <i class="fas fa-user-plus me-1"></i>Join Us
+                    </a>
+                </div>
+                <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
+                    <span class="text-white-50">
+                        <i class="fas fa-user-circle me-1"></i>
+                        Welcome, <span sec:authentication="name" class="fw-bold text-white"></span>!
+                    </span>
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn-glass">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Image Section -->
+    <div class="position-relative" style="height: 70vh; overflow: hidden; margin-top: 70px;">
+        <img th:src="${destination.imageUrl}" 
+             class="w-100 h-100 object-fit-cover parallax-image" 
+             th:alt="${destination.name}">
+        
+        <!-- Gradient Overlay -->
+        <div class="position-absolute top-0 start-0 w-100 h-100" 
+             style="background: linear-gradient(45deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 100%);"></div>
+        
+        <!-- Hero Content -->
+        <div class="position-absolute top-50 start-50 translate-middle text-center text-white w-100 px-4">
+            <h1 class="display-3 fw-bold mb-3 floating" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">
+                <i class="fas fa-map-marker-alt me-3"></i>
+                <span th:text="${destination.name}">Destination Name</span>
+            </h1>
+            
+            <div class="d-flex justify-content-center gap-4 flex-wrap mb-4">
+                <div class="stats-badge fs-5">
+                    <i class="fas fa-heart text-danger"></i>
+                    <span th:text="${#lists.size(destination.likes)}">0</span>
+                    <span>Likes</span>
+                </div>
+                <div class="stats-badge fs-5">
+                    <i class="fas fa-comments"></i>
+                    <span th:text="${#lists.size(destination.comments)}">0</span>
+                    <span>Comments</span>
+                </div>
+                <div class="stats-badge fs-5">
+                    <i class="fas fa-star text-warning"></i>
+                    <span>4.8</span>
+                    <span>Rating</span>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <form th:action="@{'/destination/' + ${destination.id} + '/like'}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-lg like-btn glow" sec:authorize="isAuthenticated()">
+                        <i class="fas fa-heart me-2"></i>Love This Place
+                    </button>
+                </form>
+                <a href="/login" class="btn btn-outline-light btn-lg" sec:authorize="!isAuthenticated()">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login to Like
+                </a>
+                <a href="/" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Destinations
+                </a>
+            </div>
+        </div>
+        
+        <!-- Scroll Down Indicator -->
+        <div class="position-absolute bottom-0 start-50 translate-middle-x pb-4">
+            <div class="text-white text-center">
+                <i class="fas fa-chevron-down fs-3 floating" style="animation-duration: 2s;"></i>
+                <div class="small">Scroll to explore</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Description Card -->
+                <div class="glass p-4 mb-4">
+                    <h2 class="mb-4 d-flex align-items-center">
+                        <i class="fas fa-info-circle text-primary me-3"></i>
+                        About This Destination
+                    </h2>
+                    <p class="lead text-dark" th:text="${destination.description}">
+                        Destination description goes here...
+                    </p>
+                    
+                    <!-- Features Grid -->
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-badge me-3">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Photography Paradise</h6>
+                                    <small class="text-muted">Perfect for capturing memories</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-badge me-3">
+                                    <i class="fas fa-hiking"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Adventure Activities</h6>
+                                    <small class="text-muted">Exciting outdoor experiences</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-badge me-3">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Local Cuisine</h6>
+                                    <small class="text-muted">Authentic flavors to discover</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-badge me-3">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Friendly Locals</h6>
+                                    <small class="text-muted">Warm and welcoming culture</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="glass p-4">
+                    <h3 class="mb-4 d-flex align-items-center">
+                        <i class="fas fa-comments text-info me-3"></i>
+                        Traveler Reviews
+                        <span class="badge ms-3" style="background: var(--tropical-gradient);" 
+                              th:text="${#lists.size(destination.comments)}">0</span>
+                    </h3>
+                    
+                    <!-- Comment Form -->
+                    <div sec:authorize="isAuthenticated()" class="mb-4">
+                        <div class="glass p-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-pen-fancy text-primary me-2"></i>
+                                Share Your Experience
+                            </h5>
+                            <form th:action="@{'/destination/' + ${destination.id} + '/comment'}" method="post">
+                                <div class="mb-3">
+                                    <textarea class="form-control" name="content" rows="4" required 
+                                              placeholder="Tell us about your amazing experience at this destination... 🌟"
+                                              style="border-radius: 15px; border: 2px solid rgba(102, 126, 234, 0.2);"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Share Review
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Login Prompt -->
+                    <div sec:authorize="!isAuthenticated()" class="text-center mb-4 glass p-4">
+                        <i class="fas fa-user-circle display-4 text-muted mb-3"></i>
+                        <h5>Join the Conversation!</h5>
+                        <p class="text-muted">Share your travel experiences and read reviews from fellow travelers</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a th:href="@{/login}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </a>
+                            <a th:href="@{/register}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Comments List -->
+                    <div class="comments-list">
+                        <div th:each="comment, commentStat : ${comments}" class="comment-item mb-4">
+                            <div class="d-flex gap-3">
+                                <div class="flex-shrink-0">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 50px; height: 50px; background: var(--primary-gradient); color: white; font-weight: bold;">
+                                        <span th:text="${#strings.substring(comment.user.username, 0, 1).toUpperCase()}">U</span>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="glass p-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="mb-0 fw-bold" th:text="${comment.user.username}">Username</h6>
+                                            <small class="text-muted" th:text="${#temporals.format(comment.createdAt, 'MMM dd, yyyy HH:mm')}">
+                                                Date
+                                            </small>
+                                        </div>
+                                        <p class="mb-2" th:text="${comment.content}">Comment content</p>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-thumbs-up me-1"></i>Helpful
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-reply me-1"></i>Reply
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty Comments State -->
+                        <div th:if="${#lists.isEmpty(comments)}" class="text-center py-5">
+                            <i class="fas fa-comment-slash display-4 text-muted mb-3"></i>
+                            <h5>No reviews yet</h5>
+                            <p class="text-muted">Be the first to share your experience!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Info Card -->
+                <div class="glass p-4 mb-4 sticky-top" style="top: 100px;">
+                    <h5 class="mb-4 d-flex align-items-center">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        Quick Info
+                    </h5>
+                    
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-plus text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Added by</small>
+                                <div class="fw-bold" th:text="${destination.createdBy != null ? destination.createdBy.username : 'Community'}">
+                                    Community
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-thermometer-half text-warning me-3"></i>
+                            <div>
+                                <small class="text-muted">Best Time</small>
+                                <div class="fw-bold">Spring & Summer</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock text-info me-3"></i>
+                            <div>
+                                <small class="text-muted">Recommended Stay</small>
+                                <div class="fw-bold">3-5 Days</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-dollar-sign text-success me-3"></i>
+                            <div>
+                                <small class="text-muted">Budget</small>
+                                <div class="fw-bold">$$$ Moderate</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-bookmark me-2"></i>Save for Later
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-share me-2"></i>Share Destination
+                        </button>
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to List
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Weather Widget -->
+                <div class="glass p-4 mb-4">
+                    <h6 class="mb-3">
+                        <i class="fas fa-cloud-sun text-warning me-2"></i>
+                        Current Weather
+                    </h6>
+                    <div class="text-center">
+                        <div class="display-6 mb-2">🌤️</div>
+                        <div class="h4 mb-1">24°C</div>
+                        <div class="text-muted">Partly Cloudy</div>
+                    </div>
+                </div>
+
+                <!-- Related Destinations -->
+                <div class="glass p-4">
+                    <h6 class="mb-3">
+                        <i class="fas fa-compass text-primary me-2"></i>
+                        You Might Also Like
+                    </h6>
+                    <div class="small-destination-cards">
+                        <!-- Placeholder for related destinations -->
+                        <div class="d-flex align-items-center mb-2 p-2 rounded" style="background: rgba(255,255,255,0.5);">
+                            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4" 
+                                 class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small">Santorini</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">Greek Islands</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-2 p-2 rounded" style="background: rgba(255,255,255,0.5);">
+                            <img src="https://images.unsplash.com/photo-1520637836862-4d197d17c86a" 
+                                 class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold small">Bali</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">Indonesia</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4 mt-5" style="background: rgba(26, 32, 53, 0.95); backdrop-filter: blur(20px);">
+        <div class="container text-center text-white-50">
+            <p class="mb-2">
+                <i class="fas fa-heart text-danger"></i>
+                Made with love for travelers worldwide
+                <i class="fas fa-heart text-danger"></i>
+            </p>
+            <p class="small">© 2025 Dreamy Destinations. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

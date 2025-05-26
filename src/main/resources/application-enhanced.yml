@@ -1,0 +1,80 @@
+# Default profile (development with H2)
+spring.application.name=vacation-destinations
+server.port=8080
+
+# H2 Database Configuration (default)
+spring.datasource.url=jdbc:h2:mem:vacationdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Thymeleaf Configuration
+spring.thymeleaf.cache=false
+
+# Security
+logging.level.org.springframework.security=DEBUG
+
+# Actuator endpoints for monitoring
+management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoint.health.show-details=always
+
+---
+# Production profile with PostgreSQL
+spring.config.activate.on-profile=production
+
+# PostgreSQL Configuration
+spring.datasource.url=jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:vacationdb}
+spring.datasource.username=${DB_USERNAME:vacation}
+spring.datasource.password=${DB_PASSWORD:vacation123}
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# Production JPA settings
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=false
+
+# Connection pool settings
+spring.datasource.hikari.maximum-pool-size=20
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.connection-timeout=30000
+
+# Redis Configuration
+spring.data.redis.host=${REDIS_HOST:localhost}
+spring.data.redis.port=${REDIS_PORT:6379}
+spring.data.redis.timeout=2000ms
+
+# Caching
+spring.cache.type=redis
+spring.cache.redis.time-to-live=3600000
+
+# Thymeleaf caching in production
+spring.thymeleaf.cache=true
+
+# Security
+logging.level.org.springframework.security=WARN
+
+---
+# Docker profile
+spring.config.activate.on-profile=docker
+
+# PostgreSQL Configuration for Docker
+spring.datasource.url=jdbc:postgresql://postgres:5432/vacationdb
+spring.datasource.username=vacation
+spring.datasource.password=vacation123
+
+# Redis Configuration for Docker
+spring.data.redis.host=redis
+spring.data.redis.port=6379
+
+# Actuator configuration for container health checks
+management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoint.health.show-details=always
+management.health.redis.enabled=true

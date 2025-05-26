@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  # Current Monolith
+  vacation-monolith:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - vacation-network
+
+  # Future User Service
+  user-service:
+    image: vacation/user-service:latest
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - vacation-network
+
+  # Future Social Service  
+  social-service:
+    image: vacation/social-service:latest
+    ports:
+      - "8082:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - MONGODB_HOST=mongodb
+    depends_on:
+      - mongodb
+    networks:
+      - vacation-network
+
+  # API Gateway
+  api-gateway:
+    image: vacation/api-gateway:latest
+    ports:
+      - "8090:8080"
+    environment:
+      - USER_SERVICE_URL=http://user-service:8080
+      - SOCIAL_SERVICE_URL=http://social-service:8080
+      - DESTINATION_SERVICE_URL=http://vacation-monolith:8080
+    depends_on:
+      - user-service
+      - social-service
+      - vacation-monolith
+    networks:
+      - vacation-network
+
+  # Databases
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: vacationdb
+      POSTGRES_USER: vacation
+      POSTGRES_PASSWORD: vacation123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vacation-network
+
+  mongodb:
+    image: mongo:6.0
+    environment:
+      MONGO_INITDB_DATABASE: socialdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - vacation-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - vacation-network
+
+  # Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: vacation
+      RABBITMQ_DEFAULT_PASS: vacation123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - vacation-network
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - vacation-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - vacation-network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  vacation-network:
+    driver: bridge
