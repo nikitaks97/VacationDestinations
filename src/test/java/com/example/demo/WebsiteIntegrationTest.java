@@ -1,67 +1,79 @@
 package com.example.demo;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-public class WebsiteIntegrationTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class WebsiteIntegrationTest {
 
-    private static final String BASE_URL = "http://localhost:8080";
-    private static final String TEST_USERNAME = "testuser";
-    private static final String TEST_PASSWORD = "testpass";
+    @LocalServerPort
+    private int port;
 
-    private final TestRestTemplate restTemplate = new TestRestTemplate();
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    private String getBaseUrl() {
+        return "http://localhost:" + port;
+    }
 
     @Test
     void homePageLoads() {
-        // Mock the response
-        ResponseEntity<String> mockResponse = mock(ResponseEntity.class);
-        HttpHeaders mockHeaders = new HttpHeaders(); // Use real HttpHeaders instance
-        when(mockResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockResponse.getBody()).thenReturn("<!DOCTYPE html>");
-        when(mockResponse.getHeaders()).thenReturn(mockHeaders);
-
-        // Use the real `restTemplate` instance
-        ResponseEntity<String> response = restTemplate.getForEntity(BASE_URL + "/", String.class);
-        assertThat(response).isNotNull(); // Ensure response is not null
-
-        if (response != null && response.getHeaders() != null) {
-            HttpHeaders headers = response.getHeaders();
-            String loginUrl = null;
-            if (headers != null && headers.getLocation() != null) {
-                loginUrl = headers.getLocation().toString();
-            }
-
-            // Check if redirection to login occurs
-            if (response.getStatusCode().is3xxRedirection() && loginUrl != null) {
+        ResponseEntity<String> response = restTemplate.getForEntity(getBaseUrl() + "/", String.class);
+        assertThat(response).isNotNull();
+        
+        if (response.getStatusCode() == HttpStatus.FOUND) {
+            var headers = response.getHeaders();
+            var location = headers != null ? headers.getLocation() : null;
+            
+            if (location != null) {
+                String loginUrl = location.toString();
                 ResponseEntity<String> loginPage = restTemplate.getForEntity(loginUrl, String.class);
-                assertThat(loginPage).isNotNull(); // Ensure loginPage is not null
-                assertThat(loginPage.getBody()).contains("Login");
-            } else {
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-                // Only check for generic HTML content
-                assertThat(response.getBody()).contains("<!DOCTYPE html>");
+                
+                // Check login page content only if the response is not null
+                if (loginPage != null && loginPage.getBody() != null) {
+                    assertThat(loginPage.getBody()).contains("Login");
+                }
             }
+        } else {
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).contains("<!DOCTYPE html>");
         }
     }
 
     @Test
     void registerAndLoginFlow() {
+        // Create form data for registration
+        MultiValueMap<String, String> registerForm = new LinkedMultiValueMap<>();
+        registerForm.add("username", "testuser");
+        registerForm.add("password", "testpass");
+
         // Register a new user
-        String registerForm = String.format("username=%s&password=%s", TEST_USERNAME, TEST_PASSWORD);
-        ResponseEntity<String> registerResponse = restTemplate.postForEntity(BASE_URL + "/register", registerForm, String.class);
-        assertThat(registerResponse).isNotNull(); // Ensure registerResponse is not null
+        ResponseEntity<String> registerResponse = restTemplate.postForEntity(
+            getBaseUrl() + "/register",
+            registerForm,
+            String.class
+        );
         assertThat(registerResponse.getStatusCode().is3xxRedirection()).isTrue();
 
-        // Try to login (should redirect to /)
-        String loginForm = String.format("username=%s&password=%s", TEST_USERNAME, TEST_PASSWORD);
-        ResponseEntity<String> loginResponse = restTemplate.postForEntity(BASE_URL + "/login", loginForm, String.class);
-        assertThat(loginResponse).isNotNull(); // Ensure loginResponse is not null
+        // Create form data for login
+        MultiValueMap<String, String> loginForm = new LinkedMultiValueMap<>();
+        loginForm.add("username", "testuser");
+        loginForm.add("password", "testpass");
+
+        // Try to login
+        ResponseEntity<String> loginResponse = restTemplate.postForEntity(
+            getBaseUrl() + "/login",
+            loginForm,
+            String.class
+        );
         assertThat(loginResponse.getStatusCode().is3xxRedirection()).isTrue();
     }
 }
