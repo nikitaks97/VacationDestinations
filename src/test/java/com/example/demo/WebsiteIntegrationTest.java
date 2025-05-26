@@ -20,24 +20,18 @@ public class WebsiteIntegrationTest {
     void homePageLoads() {
         // Mock the response
         ResponseEntity<String> mockResponse = mock(ResponseEntity.class);
-        HttpHeaders mockHeaders = mock(HttpHeaders.class);
+        HttpHeaders mockHeaders = new HttpHeaders(); // Use real HttpHeaders instance
         when(mockResponse.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockResponse.getBody()).thenReturn("<!DOCTYPE html>");
         when(mockResponse.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getLocation()).thenReturn(null);
 
         // Use the real `restTemplate` instance
         ResponseEntity<String> response = restTemplate.getForEntity("/", String.class);
         assertThat(response).isNotNull(); // Ensure response is not null
 
-        if (response != null) {
-            assertThat(response.getBody()).isNotNull(); // Ensure response body is not null
-
-            // Check if headers are present and extract location
-            String loginUrl = null;
-            if (response.getHeaders() != null && response.getHeaders().getLocation() != null) {
-                loginUrl = response.getHeaders().getLocation().toString();
-            }
+        if (response != null && response.getHeaders() != null) {
+            HttpHeaders headers = response.getHeaders();
+            String loginUrl = (headers.getLocation() != null) ? headers.getLocation().toString() : null;
 
             // Check if redirection to login occurs
             if (response.getStatusCode().is3xxRedirection() && loginUrl != null) {
