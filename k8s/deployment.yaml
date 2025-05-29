@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vacation-app
+  namespace: vacationapp # <-- Added namespace here
+  labels:
+    app: vacation-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vacation-app
+  template:
+    metadata:
+      labels:
+        app: vacation-app
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: vacation-app
+          image: nikitaks997797/vacationapp:v1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: NODE_ENV
+              value: "production"
+          volumeMounts:
+            - name: data-volume
+              mountPath: /home/node/app/data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+              ephemeral-storage: "512Mi"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+              ephemeral-storage: "1Gi"
+      volumes:
+        - name: data-volume
+          emptyDir: {}
